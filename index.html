@@ -6,6 +6,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tour de France 2025 - Make Your Picks!</title>
   <style>
+        /* SPLASH SCREEN */
+    #splashScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #14141E;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s ease;
+    }
+
+    #splashScreen img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 0 60px rgba(255, 209, 0, 0.3);
+    }
+
+    #splashScreen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Roboto+Condensed:wght@400;700&display=swap');
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -20,6 +48,14 @@
     }
 
     body {
+
+<body>
+  <!-- SPLASH SCREEN -->
+  <div id="splashScreen">
+    <img src="splash.png" alt="Prebz365">
+  </div>
+
+      
       font-family: 'Roboto Condensed', sans-serif;
       background: var(--black);
       color: var(--white);
@@ -1230,6 +1266,14 @@ async function loadUserPicks() {
     // INITIALIZATION
     // ============================================
     async function init() {
+      // Splash screen — show for 2 seconds, then fade out
+      const splash = document.getElementById('splashScreen');
+      if (splash) {
+        setTimeout(() => {
+          splash.classList.add('fade-out');
+          setTimeout(() => splash.remove(), 600); // remove after fade
+        }, 2000);
+      }
       // Check for saved session
       const savedUser = localStorage.getItem('tdf_user');
       if (savedUser) {
