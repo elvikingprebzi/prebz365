@@ -736,104 +736,22 @@
     </div>
 
     <!-- PICKS PAGE -->
-    <div id="picksPage" class="page">
-      <div class="hero">
-        <span class="maillot-icon">👕</span>
-        <h1>Make Your Picks</h1>
-        <p>Select your predictions for Tour de France 2025. Good luck!</p>
-      </div>
+    <div id="picksAlert" class="alert"></div>
 
-      <div id="picksAlert" class="alert"></div>
+<div class="card">
+  <h2>🎯 Your Predictions</h2>
+  <p style="color: rgba(250,250,250,0.6); margin-bottom: 25px;">Make your picks below. Each question locks at its deadline. Points shown next to each option.</p>
+  <div id="questionsContainer">
+    <p style="text-align:center;padding:40px;color:rgba(250,250,250,0.6);">Loading questions...</p>
+  </div>
+  <button onclick="submitPicks()" class="btn btn-primary" id="savePicksBtn" style="margin-top:20px;">💾 Save My Picks</button>
+</div>
 
-      <!-- Stage Winner Picks -->
-      <div class="card">
-        <h2>🏁 Stage Winner Picks</h2>
-        <p style="color: rgba(250,250,250,0.6); margin-bottom: 25px;">Pick the winner for each stage. Points awarded based on accuracy!</p>
-        <div class="stages-grid" id="stagesContainer">
-          <!-- Stages will be dynamically populated -->
-        </div>
-      </div>
+<div id="confirmedPicks" class="confirmed-picks" style="display: none;">
+  <h3>✅ Your Submitted Picks</h3>
+  <div class="picks-list" id="picksList"></div>
+</div>
 
-      <!-- Jersey Picks -->
-      <div class="jersey-section">
-        <div class="jersey-card yellow">
-          <h3>👕 Yellow Jersey (GC Winner)</h3>
-          <p style="color: rgba(250,250,250,0.6); margin-bottom: 15px;">Who will win the overall General Classification?</p>
-          <select id="gcPick" class="form-group" style="width:100%;padding:15px;font-size:1rem;background:var(--black);border:2px solid var(--light-gray);border-radius:6px;color:var(--white);">
-            <option value="">-- Select GC Winner --</option>
-            <option value="Tadej Pogačar">Tadej Pogačar</option>
-            <option value="Jonas Vingegaard">Jonas Vingegaard</option>
-            <option value="Primož Roglič">Primož Roglič</option>
-            <option value="Remco Evenepoel">Remco Evenepoel</option>
-            <option value="Mathieu van der Poel">Mathieu van der Poel</option>
-            <option value="Wout van Aert">Wout van Aert</option>
-            <option value="Sepp Kuss">Sepp Kuss</option>
-            <option value="Geraint Thomas">Geraint Thomas</option>
-            <option value="Matteo Jorgenson">Matteo Jorgenson</option>
-            <option value="Carlos Rodríguez">Carlos Rodríguez</option>
-          </select>
-        </div>
-
-        <div class="jersey-card green">
-          <h3>💚 Green Jersey (Points Classification)</h3>
-          <p style="color: rgba(250,250,250,0.6); margin-bottom: 15px;">Who will win the Points Classification?</p>
-          <select id="pointsPick" class="form-group" style="width:100%;padding:15px;font-size:1rem;background:var(--black);border:2px solid var(--light-gray);border-radius:6px;color:var(--white);">
-            <option value="">-- Select Points Winner --</option>
-            <option value="Tadej Pogačar">Tadej Pogačar</option>
-            <option value="Jonas Vingegaard">Jonas Vingegaard</option>
-            <option value="Jasper Philipsen">Jasper Philipsen</option>
-            <option value="Fabio Jakobsen">Fabio Jakobsen</option>
-            <option value="Wout van Aert">Wout van Aert</option>
-            <option value="Dylan Groenewegen">Dylan Groenewegen</option>
-            <option value="Biniam Girmay">Biniam Girmay</option>
-            <option value="Milan Vader">Milan Vader</option>
-            <option value="Arnaud De Lie">Arnaud De Lie</option>
-            <option value="Bryan Coquard">Bryan Coquard</option>
-          </select>
-        </div>
-
-        <div class="jersey-card polka">
-          <h3>🔴 Mountains Jersey (KOM)</h3>
-          <p style="color: rgba(250,250,250,0.6); margin-bottom: 15px;">Who will be King of the Mountains?</p>
-          <select id="mountainsPick" class="form-group" style="width:100%;padding:15px;font-size:1rem;background:var(--black);border:2px solid var(--light-gray);border-radius:6px;color:var(--white);">
-            <option value="">-- Select Mountains Winner --</option>
-            <option value="Tadej Pogačar">Tadej Pogačar</option>
-            <option value="Jonas Vingegaard">Jonas Vingegaard</option>
-            <option value="Primož Roglič">Primož Roglič</option>
-            <option value="Sepp Kuss">Sepp Kuss</option>
-            <option value="Remco Evenepoel">Remco Evenepoel</option>
-            <option value="Mattias Skjelmose">Mattias Skjelmose</option>
-            <option value="Felix Gall">Felix Gall</option>
-            <option value="David Gaudu">David Gaudu</option>
-            <option value="Mikel Landa">Mikel Landa</option>
-            <option value="Aleksandr Vlasov">Aleksandr Vlasov</option>
-          </select>
-        </div>
-
-        <div class="jersey-card white">
-          <h3>⚪ White Jersey (Best Young Rider)</h3>
-          <p style="color: rgba(250,250,250,0.6); margin-bottom: 15px;">Who will win the Young Rider Classification?</p>
-          <select id="youngRiderPick" class="form-group" style="width:100%;padding:15px;font-size:1rem;background:var(--black);border:2px solid var(--light-gray);border-radius:6px;color:var(--white);">
-            <option value="">-- Select Young Rider Winner --</option>
-            <option value="Tadej Pogačar">Tadej Pogačar</option>
-            <option value="Remco Evenepoel">Remco Evenepoel</option>
-            <option value="Matteo Jorgenson">Matteo Jorgenson</option>
-            <option value="Carlos Rodríguez">Carlos Rodríguez</option>
-            <option value="Juan Ayuso">Juan Ayuno</option>
-            <option value="Primož Roglič">Primož Roglič</option>
-            <option value="Mattias Skjelmose">Mattias Skjelmose</option>
-            <option value="Felix Gall">Felix Gall</option>
-            <option value="Thymen Arensman">Thymen Arensman</option>
-            <option value="Cian Uijtebroeks">Cian Uijtebroeks</option>
-          </select>
-        </div>
-      </div>
-
-      <div style="text-align: center; margin-top: 40px;">
-        <button onclick="submitPicks()" class="btn btn-primary" style="max-width: 400px;">
-          ✅ Submit All Picks
-        </button>
-      </div>
 
       <!-- Confirmed Picks Display -->
       <div id="confirmedPicks" class="confirmed-picks" style="display: none;">
@@ -1104,160 +1022,156 @@
     // ============================================
     // PICKS FUNCTIONS
     // ============================================
-    function loadPicksForm() {
-      const container = document.getElementById('stagesContainer');
-      container.innerHTML = stages.map(stage => `
-        <div class="stage-card">
-          <span class="stage-number">Stage ${stage.number}</span>
-          <div class="stage-type">${stage.type} • ${stage.distance}</div>
-          <div class="stage-route">${stage.route}</div>
-          <select id="stage_${stage.number}" class="form-group" style="width:100%;padding:12px;font-size:0.9rem;background:var(--black);border:2px solid var(--light-gray);border-radius:6px;color:var(--white);">
-            <option value="">-- Select Winner --</option>
-            ${riders.map(r => `<option value="${r}">${r}</option>`).join('')}
-          </select>
+    // ============================================
+// PICKS — DB DRIVEN
+// ============================================
+let loadedQuestions = [];
+
+async function loadPicksForm() {
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = '<p style="text-align:center;padding:40px;color:rgba(250,250,250,0.6);">Loading questions...</p>';
+
+  // Load visible questions
+  const { data: questions, error: qErr } = await db
+    .from('questions')
+    .select('*')
+    .eq('is_visible', true)
+    .order('sort_order', { ascending: true });
+
+  if (qErr) {
+    container.innerHTML = '<p style="color:#FF6B6B;text-align:center;">Failed to load questions.</p>';
+    console.error(qErr);
+    return;
+  }
+
+  // Load all options
+  const { data: options, error: oErr } = await db
+    .from('options')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  if (oErr) {
+    container.innerHTML = '<p style="color:#FF6B6B;text-align:center;">Failed to load options.</p>';
+    console.error(oErr);
+    return;
+  }
+
+  // Load this user's existing picks
+  const { data: userPicks } = await db
+    .from('picks')
+    .select('question_id, option_id')
+    .eq('user_id', currentUser.id);
+
+  const pickMap = {};
+  (userPicks || []).forEach(p => { pickMap[p.question_id] = p.option_id; });
+
+  loadedQuestions = questions;
+  const now = new Date();
+
+  container.innerHTML = questions.map(q => {
+    const opts = options.filter(o => o.question_id === q.id);
+    const isLocked = q.lock && new Date(q.lock) < now;
+    const savedOpt = pickMap[q.id] || '';
+
+    return `
+      <div class="stage-card" style="margin-bottom:18px;">
+        <div class="stage-route" style="margin-bottom:10px;">
+          ${q.q_label ? `<strong>${q.q_label}:</strong> ` : ''}${q.question_text}
+          ${isLocked ? ' <span style="color:#FF6B6B;font-size:0.85rem;">🔒 LOCKED</span>' : ''}
         </div>
-      `).join('');
-    }
+        <select id="q_${q.id}" data-qid="${q.id}" ${isLocked ? 'disabled' : ''}
+          style="width:100%;padding:12px;font-size:0.95rem;background:var(--black);border:2px solid var(--light-gray);border-radius:6px;color:var(--white);${isLocked ? 'opacity:0.6;cursor:not-allowed;' : ''}">
+          <option value="">-- Select --</option>
+          ${opts.map(o => `
+            <option value="${o.id}" ${savedOpt == o.id ? 'selected' : ''}>
+              ${o.option_text} (${o.points} pts)
+            </option>
+          `).join('')}
+        </select>
+      </div>
+    `;
+  }).join('');
 
-    async function submitPicks() {
-      if (!currentUser) {
-        showAlert('picksAlert', 'Please login first!', 'error');
-        return;
-      }
-      
-      // Collect all picks
-      const stagePicks = {};
-      stages.forEach(stage => {
-        const pick = document.getElementById(`stage_${stage.number}`).value;
-        if (pick) {
-          stagePicks[`stage_${stage.number}`] = pick;
-        }
+  if (questions.length === 0) {
+    container.innerHTML = '<p style="text-align:center;padding:40px;color:rgba(250,250,250,0.6);">No questions available yet. Check back soon!</p>';
+  }
+}
+
+async function submitPicks() {
+  if (!currentUser) { showPage('login'); return; }
+
+  const selects = document.querySelectorAll('#questionsContainer select[data-qid]');
+  const rows = [];
+  const now = new Date();
+
+  selects.forEach(sel => {
+    if (sel.disabled) return; // skip locked questions
+    const qid = parseInt(sel.dataset.qid);
+    const oid = sel.value ? parseInt(sel.value) : null;
+    if (oid) {
+      rows.push({
+        user_id: currentUser.id,
+        question_id: qid,
+        option_id: oid,
+        updated_at: now.toISOString()
       });
-      
-      const gcPick = document.getElementById('gcPick').value;
-      const pointsPick = document.getElementById('pointsPick').value;
-      const mountainsPick = document.getElementById('mountainsPick').value;
-      const youngRiderPick = document.getElementById('youngRiderPick').value;
-      
-      // Validate at least one pick
-      const totalPicks = Object.keys(stagePicks).length + 
-        (gcPick ? 1 : 0) + 
-        (pointsPick ? 1 : 0) + 
-        (mountainsPick ? 1 : 0) + 
-        (youngRiderPick ? 1 : 0);
-      
-      if (totalPicks === 0) {
-        showAlert('picksAlert', 'Please make at least one pick!', 'error');
-        return;
-      }
-      
-      try {
-        // Check if picks already exist for this user
-        const { data: existingPicks } = await db
-          .from('picks')
-          .select('id')
-          .eq('user_id', currentUser.id)
-          .single();
-        
-        const picksData = {
-          user_id: currentUser.id,
-          username: currentUser.username,
-          stage_picks: stagePicks,
-          gc_pick: gcPick,
-          points_pick: pointsPick,
-          mountains_pick: mountainsPick,
-          young_rider_pick: youngRiderPick,
-          submitted_at: new Date().toISOString()
-        };
-        
-        let result;
-        if (existingPicks) {
-          // Update existing picks
-          result = await db
-            .from('picks')
-            .update(picksData)
-            .eq('user_id', currentUser.id);
-        } else {
-          // Insert new picks
-          result = await db
-            .from('picks')
-            .insert(picksData);
-        }
-        
-        if (result.error) throw result.error;
-        
-        showAlert('picksAlert', `Successfully saved ${totalPicks} picks!`, 'success');
-        loadUserPicks();
-        
-      } catch (error) {
-        console.error('Submit picks error:', error);
-        showAlert('picksAlert', 'Failed to save picks. Please try again.', 'error');
-      }
     }
+  });
 
-    async function loadUserPicks() {
-      if (!currentUser) return;
-      
-      try {
-        const { data: picks } = await db
-          .from('picks')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .single();
-        
-        if (picks) {
-          // Fill in the form with existing picks
-          if (picks.stage_picks) {
-            Object.entries(picks.stage_picks).forEach(([key, value]) => {
-              const el = document.getElementById(key);
-              if (el) el.value = value;
-            });
-          }
-          if (picks.gc_pick) document.getElementById('gcPick').value = picks.gc_pick;
-          if (picks.points_pick) document.getElementById('pointsPick').value = picks.points_pick;
-          if (picks.mountains_pick) document.getElementById('mountainsPick').value = picks.mountains_pick;
-          if (picks.young_rider_pick) document.getElementById('youngRiderPick').value = picks.young_rider_pick;
-          
-          // Show confirmed picks
-          displayConfirmedPicks(picks);
-        }
-      } catch (error) {
-        console.log('No existing picks found');
-      }
-    }
+  if (rows.length === 0) {
+    showAlert('picksAlert', 'Please select at least one answer.', 'error');
+    return;
+  }
 
-    function displayConfirmedPicks(picks) {
-      const container = document.getElementById('confirmedPicks');
-      const list = document.getElementById('picksList');
-      
-      const allPicks = [];
-      
-      // Stage picks
-      if (picks.stage_picks) {
-        Object.entries(picks.stage_picks).forEach(([key, value]) => {
-          allPicks.push({
-            label: key.replace('_', ' ').toUpperCase(),
-            value: value
-          });
-        });
-      }
-      
-      // Jersey picks
-      if (picks.gc_pick) allPicks.push({ label: 'Yellow Jersey (GC)', value: picks.gc_pick });
-      if (picks.points_pick) allPicks.push({ label: 'Green Jersey', value: picks.points_pick });
-      if (picks.mountains_pick) allPicks.push({ label: 'Mountains Jersey', value: picks.mountains_pick });
-      if (picks.young_rider_pick) allPicks.push({ label: 'White Jersey', value: picks.young_rider_pick });
-      
-      if (allPicks.length > 0) {
-        list.innerHTML = allPicks.map(pick => `
-          <div class="pick-item">
-            <span class="pick-label">${pick.label}</span>
-            <span class="pick-value">${pick.value}</span>
-          </div>
-        `).join('');
-        container.style.display = 'block';
-      }
-    }
+  const { error } = await db
+    .from('picks')
+    .upsert(rows, { onConflict: 'user_id,question_id' });
+
+  if (error) {
+    console.error('Save picks error:', error);
+    showAlert('picksAlert', 'Failed to save picks. Please try again.', 'error');
+    return;
+  }
+
+  showAlert('picksAlert', `Successfully saved ${rows.length} pick(s)!`, 'success');
+  loadUserPicks();
+}
+
+async function loadUserPicks() {
+  if (!currentUser) return;
+
+  const { data: userPicks, error } = await db
+    .from('picks')
+    .select('question_id, option_id')
+    .eq('user_id', currentUser.id);
+
+  if (error || !userPicks || userPicks.length === 0) {
+    document.getElementById('confirmedPicks').style.display = 'none';
+    return;
+  }
+
+  // Need question + option text for display
+  const { data: questions } = await db.from('questions').select('id, q_label, question_text');
+  const { data: options } = await db.from('options').select('id, option_text');
+
+  const qMap = {}; (questions || []).forEach(q => qMap[q.id] = q);
+  const oMap = {}; (options || []).forEach(o => oMap[o.id] = o.option_text);
+
+  const list = document.getElementById('picksList');
+  list.innerHTML = userPicks.map(p => {
+    const q = qMap[p.question_id];
+    const label = q ? (q.q_label ? `${q.q_label}: ${q.question_text}` : q.question_text) : `Question ${p.question_id}`;
+    return `
+      <div class="pick-item">
+        <span class="pick-label">${label}</span>
+        <span class="pick-value">${oMap[p.option_id] || '—'}</span>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('confirmedPicks').style.display = 'block';
+}
+
 
     // ============================================
     // LEADERBOARD
@@ -1322,7 +1236,17 @@
       }
       
       // Initialize picks form
-      loadPicksForm();
+      async function init() {
+  const savedUser = localStorage.getItem('tdf_user');
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
+    updateAuthUI();
+  }
+  // picks form loads when picks page is opened
+}
+
+init();
+
     }
 
     // Start the app
