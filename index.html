@@ -736,29 +736,31 @@
     </div>
 
     <!-- PICKS PAGE -->
-    <div id="picksAlert" class="alert"></div>
+       <!-- PICKS PAGE -->
+    <div id="picksPage" class="page">
+      <div class="hero">
+        <span class="hero-bike">🎯</span>
+        <h1>Make Your Picks</h1>
+        <p>Predict the winners and earn points!</p>
+      </div>
 
-<div class="card">
-  <h2>🎯 Your Predictions</h2>
-  <p style="color: rgba(250,250,250,0.6); margin-bottom: 25px;">Make your picks below. Each question locks at its deadline. Points shown next to each option.</p>
-  <div id="questionsContainer">
-    <p style="text-align:center;padding:40px;color:rgba(250,250,250,0.6);">Loading questions...</p>
-  </div>
-  <button onclick="submitPicks()" class="btn btn-primary" id="savePicksBtn" style="margin-top:20px;">💾 Save My Picks</button>
-</div>
+      <div id="picksAlert" class="alert"></div>
 
-<div id="confirmedPicks" class="confirmed-picks" style="display: none;">
-  <h3>✅ Your Submitted Picks</h3>
-  <div class="picks-list" id="picksList"></div>
-</div>
+      <div class="card">
+        <h2>🎯 Your Predictions</h2>
+        <p style="color: rgba(250,250,250,0.6); margin-bottom: 25px;">Make your picks below. Each question locks at its deadline. Points shown next to each option.</p>
+        <div id="questionsContainer">
+          <p style="text-align:center;padding:40px;color:rgba(250,250,250,0.6);">Loading questions...</p>
+        </div>
+        <button onclick="submitPicks()" class="btn btn-primary" id="savePicksBtn" style="margin-top:20px;">💾 Save My Picks</button>
+      </div>
 
-
-      <!-- Confirmed Picks Display -->
       <div id="confirmedPicks" class="confirmed-picks" style="display: none;">
         <h3>✅ Your Submitted Picks</h3>
         <div class="picks-list" id="picksList"></div>
       </div>
     </div>
+
 
     <!-- LEADERBOARD PAGE -->
     <div id="leaderboardPage" class="page">
@@ -1234,23 +1236,12 @@ async function loadUserPicks() {
         currentUser = JSON.parse(savedUser);
         updateAuthUI();
       }
-      
-      // Initialize picks form
-      async function init() {
-  const savedUser = localStorage.getItem('tdf_user');
-  if (savedUser) {
-    currentUser = JSON.parse(savedUser);
-    updateAuthUI();
-  }
-  // picks form loads when picks page is opened
-}
-
-init();
-
+      // picks form loads when picks page is opened
     }
 
     // Start the app
     init();
+
   </script>
 </body>
 </html>
