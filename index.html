@@ -656,6 +656,113 @@
       display: block;
       margin-bottom: 15px;
     }
+
+    /* ===== PICKS PAGE — SECTION GROUPINGS ===== */
+.pick-section {
+  margin-bottom: 30px;
+  border: 2px solid var(--light-gray);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.3);
+}
+
+.section-header {
+  background: var(--yellow);
+  padding: 14px 18px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--black);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.section-body {
+  padding: 18px;
+}
+
+/* ===== STAGE INFO BAR ===== */
+.stage-info-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  background: var(--yellow);
+  color: var(--black);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.stage-info-type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.stage-info-route {
+  flex: 1;
+  min-width: 150px;
+}
+
+.stage-info-distance {
+  font-weight: 700;
+}
+
+/* ===== QUESTION CARDS ===== */
+.stage-card {
+  background: var(--black);
+  border: 1px solid var(--light-gray);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+.stage-question {
+  color: var(--white);
+  margin-bottom: 12px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+/* ===== OPTIONS ===== */
+.option-label {
+  display: block;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--light-gray);
+  border-radius: 6px;
+  color: var(--white);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.option-label:hover { background: rgba(230,199,80,0.15); }
+.option-label input { margin-right: 10px; }
+
+/* ===== TT TAG ===== */
+.tt-tag {
+  background: var(--black);
+  color: var(--yellow);
+  font-weight: 700;
+  padding: 1px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  margin-left: 2px;
+}
+
+/* ===== LOCKED ===== */
+.locked-badge {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-left: 8px;
+}   
   </style>
 
 <body>
@@ -1062,73 +1169,121 @@ let loadedQuestions = [];
 
 async function loadPicksForm() {
   const container = document.getElementById('questionsContainer');
-  container.innerHTML = '<p style="text-align:center;padding:40px;color:rgba(250,250,250,0.6);">Loading questions...</p>';
+  if (!currentUser) { showPage('login'); return; }
 
-  // Load visible questions
-  const { data: questions, error: qErr } = await db
-    .from('questions')
-    .select('*')
-    .eq('is_visible', true)
-    .order('sort_order', { ascending: true });
+  // ---- Fetch data ----
+  const { data: questions } = await db.from('questions').select('*').order('id');
+  const { data: options }   = await db.from('options').select('*');
+  const { data: picks }     = await db.from('picks').select('*').eq('user_id', currentUser.id);
 
-  if (qErr) {
-    container.innerHTML = '<p style="color:#FF6B6B;text-align:center;">Failed to load questions.</p>';
-    console.error(qErr);
-    return;
-  }
+  const savedPick = (qId) => (picks || []).find(p => p.question_id === qId);
 
-  // Load all options
-  const { data: options, error: oErr } = await db
-    .from('options')
-    .select('*')
-    .order('sort_order', { ascending: true });
+  // ---- Stage type → emoji icon ----
+  const typeIcon = (type) => {
+    switch ((type || '').toLowerCase()) {
+      case 'kuperet': return '⛰️';   // Hilly
+      case 'bjerge':  return '🏔️';   // Mountain
+      case 'flad':    return '🛣️';   // Flat
+      default:        return '🚴';
+    }
+  };
 
-  if (oErr) {
-    container.innerHTML = '<p style="color:#FF6B6B;text-align:center;">Failed to load options.</p>';
-    console.error(oErr);
-    return;
-  }
+  // ---- Is this stage a time trial? ----
+  const isTT = (type) => {
+    const t = (type || '').toLowerCase();
+    return t === 'tt' || t === 'ttt';
+  };
 
-  // Load this user's existing picks
-  const { data: userPicks } = await db
-    .from('picks')
-    .select('question_id, option_id')
-    .eq('user_id', currentUser.id);
+  // ---- Render one question card ----
+  const renderQuestion = (q) => {
+    const qOptions = (options || []).filter(o => o.question_id === q.id);
+    const saved = savedPick(q.id);
+    const isLocked = q.lock === true;
 
-  const pickMap = {};
-  (userPicks || []).forEach(p => { pickMap[p.question_id] = p.option_id; });
-
-  loadedQuestions = questions;
-  const now = new Date();
-
-  container.innerHTML = questions.map(q => {
-    const opts = options.filter(o => o.question_id === q.id);
-    const isLocked = q.lock && new Date(q.lock) < now;
-    const savedOpt = pickMap[q.id] || '';
+    const optionsHtml = qOptions.map(o => `
+      <label class="option-label">
+        <input type="radio" name="q_${q.id}" value="${o.id}"
+          ${saved && saved.option_id === o.id ? 'checked' : ''}
+          ${isLocked ? 'disabled' : ''}>
+        ${o.option_text}
+      </label>
+    `).join('');
 
     return `
-      <div class="stage-card" style="margin-bottom:18px;">
-        <div class="stage-route" style="margin-bottom:10px;">
-          ${q.q_label ? `<strong>${q.q_label}:</strong> ` : ''}${q.question_text}
-          ${isLocked ? ' <span style="color:#FF6B6B;font-size:0.85rem;">🔒 LOCKED</span>' : ''}
+      <div class="stage-card">
+        <div class="stage-question">
+          ${q.question_text}
+          ${isLocked ? '<span class="locked-badge">🔒 LÅST</span>' : ''}
         </div>
-        <select id="q_${q.id}" data-qid="${q.id}" ${isLocked ? 'disabled' : ''}
-          style="width:100%;padding:12px;font-size:0.95rem;background:var(--black);border:2px solid var(--light-gray);border-radius:6px;color:var(--white);${isLocked ? 'opacity:0.6;cursor:not-allowed;' : ''}">
-          <option value="">-- Select --</option>
-          ${opts.map(o => `
-            <option value="${o.id}" ${savedOpt == o.id ? 'selected' : ''}>
-              ${o.option_text} (${o.points} pts)
-            </option>
-          `).join('')}
-        </select>
+        ${optionsHtml}
       </div>
     `;
-  }).join('');
+  };
 
-  if (questions.length === 0) {
-    container.innerHTML = '<p style="text-align:center;padding:40px;color:rgba(250,250,250,0.6);">No questions available yet. Check back soon!</p>';
+  // ---- Split questions: pre-tour (stage null) vs stages ----
+  const preTour = (questions || []).filter(q => q.stage === null);
+  const stageNums = [...new Set((questions || [])
+    .filter(q => q.stage !== null)
+    .map(q => q.stage))]
+    .sort((a, b) => a - b);
+
+  let html = '';
+
+  // ---- PRE-TOUR SECTION ----
+  if (preTour.length) {
+    html += `
+      <div class="pick-section">
+        <div class="section-header">
+          <div class="section-title">
+            <span>🏆</span><span>Før-Tour Forudsigelser</span>
+          </div>
+        </div>
+        <div class="section-body">
+          ${preTour.map(renderQuestion).join('')}
+        </div>
+      </div>
+    `;
   }
+
+  // ---- STAGE SECTIONS ----
+  stageNums.forEach(num => {
+    const s = (stages || []).find(st => st.number === num);
+    const stageQs = (questions || []).filter(q => q.stage === num);
+
+    // Build stage info bar (only if we have stage data)
+    let stageInfo = '';
+    if (s) {
+      stageInfo = `
+        <div class="stage-info-bar">
+          <span class="stage-info-type">
+            ${typeIcon(s.type)} ${s.type}
+            ${isTT(s.type) ? '⏱️ <span class="tt-tag">TT</span>' : ''}
+          </span>
+          <span class="stage-info-route">${s.route}</span>
+          <span class="stage-info-distance">${s.distance}</span>
+        </div>
+      `;
+    }
+
+    html += `
+      <div class="pick-section">
+        <div class="section-header">
+          <div class="section-title">
+            <span>${s ? typeIcon(s.type) : '🚴'}</span>
+            <span>Etape ${num}</span>
+          </div>
+        </div>
+        <div class="section-body">
+          ${stageInfo}
+          ${stageQs.map(renderQuestion).join('')}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html || '<p style="text-align:center;padding:40px;color:rgba(250,250,250,0.6);">Ingen spørgsmål tilgængelige endnu.</p>';
 }
+
 
 async function submitPicks() {
   if (!currentUser) { showPage('login'); return; }
