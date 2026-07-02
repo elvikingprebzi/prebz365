@@ -1200,25 +1200,25 @@ async function loadPicksForm() {
     const saved = savedPick(q.id);
     const isLocked = q.lock === true;
 
-    const optionsHtml = qOptions.map(o => `
-      <label class="option-label">
-        <input type="radio" name="q_${q.id}" value="${o.id}"
-          ${saved && saved.option_id === o.id ? 'checked' : ''}
-          ${isLocked ? 'disabled' : ''}>
-        ${o.option_text}
-      </label>
-    `).join('');
-
     return `
       <div class="stage-card">
         <div class="stage-question">
-          ${q.question_text}
-          ${isLocked ? '<span class="locked-badge">🔒 LÅST</span>' : ''}
+          ${q.q_label ? `<strong>${q.q_label}:</strong> ` : ''}${q.question_text}
+          ${isLocked ? '<span class="locked-badge">🔒 LOCKED</span>' : ''}
         </div>
-        ${optionsHtml}
+        <select id="q_${q.id}" data-qid="${q.id}" ${isLocked ? 'disabled' : ''}
+          style="width:100%;padding:12px;font-size:0.95rem;background:var(--black);border:2px solid var(--light-gray);border-radius:6px;color:var(--white);${isLocked ? 'opacity:0.6;cursor:not-allowed;' : ''}">
+          <option value="">-- Vælg --</option>
+          ${qOptions.map(o => `
+            <option value="${o.id}" ${saved && saved.option_id == o.id ? 'selected' : ''}>
+              ${o.option_text} (${o.points} pts)
+            </option>
+          `).join('')}
+        </select>
       </div>
     `;
   };
+
 
   // ---- Split questions: pre-tour (stage null) vs stages ----
   const preTour = (questions || []).filter(q => q.stage === null);
