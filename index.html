@@ -1181,14 +1181,13 @@ async function loadPicksForm() {
   // ---- Stage type → emoji icon ----
   const typeIcon = (type) => {
     switch ((type || '').toLowerCase()) {
-      case 'kuperet': return '⛰️';   // Hilly
-      case 'bjerge':  return '🏔️';   // Mountain
-      case 'flad':    return '🛣️';   // Flat
+      case 'kuperet': return '⛰️';
+      case 'bjerge':  return '🏔️';
+      case 'flad':    return '🛣️';
       default:        return '🚴';
     }
   };
 
-  // ---- Is this stage a time trial? ----
   const isTT = (type) => {
     const t = (type || '').toLowerCase();
     return t === 'tt' || t === 'ttt';
@@ -1198,7 +1197,8 @@ async function loadPicksForm() {
   const renderQuestion = (q) => {
     const qOptions = (options || []).filter(o => o.question_id === q.id);
     const saved = savedPick(q.id);
-    const isLocked = q.lock === true;
+    // LOCK LOGIC — compare lock_at timestamp to now
+    const isLocked = q.lock_at ? new Date(q.lock_at) <= new Date() : false;
 
     return `
       <div class="stage-card">
@@ -1219,7 +1219,6 @@ async function loadPicksForm() {
     `;
   };
 
-
   // ---- Split questions: pre-tour (stage null) vs stages ----
   const preTour = (questions || []).filter(q => q.stage === null);
   const stageNums = [...new Set((questions || [])
@@ -1230,13 +1229,11 @@ async function loadPicksForm() {
   let html = '';
 
   // ---- PRE-TOUR SECTION ----
-  if (preTour.length) {
+  if (preTour.length > 0) {
     html += `
       <div class="pick-section">
         <div class="section-header">
-          <div class="section-title">
-            <span>🏆</span><span>Før-Tour Forudsigelser</span>
-          </div>
+          <div class="section-title">🏁 Pre-Tour Spørgsmål</div>
         </div>
         <div class="section-body">
           ${preTour.map(renderQuestion).join('')}
@@ -1246,21 +1243,20 @@ async function loadPicksForm() {
   }
 
   // ---- STAGE SECTIONS ----
-  stageNums.forEach(num => {
-    const s = (stages || []).find(st => st.number === num);
-    const stageQs = (questions || []).filter(q => q.stage === num);
+  stageNums.forEach(stageNum => {
+    const stageQuestions = (questions || []).filter(q => q.stage === stageNum);
+    const stageInfo = stages.find(s => s.number === stageNum);
 
-    // Build stage info bar (only if we have stage data)
-    let stageInfo = '';
-    if (s) {
-      stageInfo = `
+    let infoBar = '';
+    if (stageInfo) {
+      infoBar = `
         <div class="stage-info-bar">
-          <span class="stage-info-type">
-            ${typeIcon(s.type)} ${s.type}
-            ${isTT(s.type) ? '⏱️ <span class="tt-tag">TT</span>' : ''}
-          </span>
-          <span class="stage-info-route">${s.route}</span>
-          <span class="stage-info-distance">${s.distance}</span>
+          <div class="stage-info-type">
+            ${typeIcon(stageInfo.type)} ${stageInfo.type}
+            ${isTT(stageInfo.type) ? '<span class="tt-tag">TT</span>' : ''}
+          </div>
+          <div class="stage-info-route">${stageInfo.route}</div>
+          <div class="stage-info-distance">${stageInfo.distance}</div>
         </div>
       `;
     }
@@ -1268,14 +1264,11 @@ async function loadPicksForm() {
     html += `
       <div class="pick-section">
         <div class="section-header">
-          <div class="section-title">
-            <span>${s ? typeIcon(s.type) : '🚴'}</span>
-            <span>Etape ${num}</span>
-          </div>
+          <div class="section-title">🚴 Stage ${stageNum}</div>
         </div>
         <div class="section-body">
-          ${stageInfo}
-          ${stageQs.map(renderQuestion).join('')}
+          ${infoBar}
+          ${stageQuestions.map(renderQuestion).join('')}
         </div>
       </div>
     `;
