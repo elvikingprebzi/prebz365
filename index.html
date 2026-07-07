@@ -1011,6 +1011,8 @@
     // PAGE NAVIGATION
     // ============================================
     function showPage(pageId) {
+      refreshCurrentUser();
+      
       // Hide all pages
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       
@@ -1126,27 +1128,6 @@
         refreshCurrentUser();
         showAlert('loginAlert', 'Welcome back, ' + username + '!', 'success');
         setTimeout(() => showPage('picks'), 1000);
-
-        // ===== Show page - update points =====
-    
-    async function refreshCurrentUser() {
-  if (!currentUser) return;
-  try {
-    const { data, error } = await db
-      .from('users')
-      .select('username, points, correct_picks')
-      .eq('username', currentUser.username)
-      .single();
-
-    if (!error && data) {
-      currentUser = { ...currentUser, ...data };
-      localStorage.setItem('tdf_user', JSON.stringify(currentUser));
-      updateAuthUI(); // gentegner menubaren med det friske tal
-    }
-  } catch (e) {
-    console.error('refreshCurrentUser fejl:', e);
-  }
-}
         
         // Clear form
         document.getElementById('loginUsername').value = '';
@@ -1195,6 +1176,24 @@
         // Remove user info
         const userInfo = document.querySelector('.user-info');
         if (userInfo) userInfo.remove();
+      }
+
+      async function refreshCurrentUser() {
+      if (!currentUser) return;
+      try {
+        const { data, error } = await db
+          .from('users')
+          .select('username, points, correct_picks')
+          .eq('username', currentUser.username)
+          .single();
+
+        if (!error && data) {
+          currentUser = { ...currentUser, ...data };
+          localStorage.setItem('tdf_user', JSON.stringify(currentUser));
+          updateAuthUI();
+        }
+      } catch (e) {
+        console.error('refreshCurrentUser fejl:', e);
       }
     }
 
