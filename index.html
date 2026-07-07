@@ -1011,7 +1011,21 @@
     // PAGE NAVIGATION
     // ============================================
     function showPage(pageId) {
-      refreshCurrentUser().catch(() => {});
+      if (currentUser) {
+    // Opdater points i baggrunden — blokerer ikke siden
+    db.from('users')
+      .select('username, points, correct_picks')
+      .eq('username', currentUser.username)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          currentUser = { ...currentUser, ...data };
+          localStorage.setItem('tdf_user', JSON.stringify(currentUser));
+          updateAuthUI();
+        }
+      })
+      .catch(() => {});
+  }
       
       // Hide all pages
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
