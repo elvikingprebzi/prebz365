@@ -1011,7 +1011,7 @@
     // PAGE NAVIGATION
     // ============================================
     function showPage(pageId) {
-      refreshCurrentUser();
+      refreshCurrentUser().catch(() => {});
       
       // Hide all pages
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
