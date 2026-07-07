@@ -905,7 +905,7 @@
       <div class="hero">
         <span class="hero-bike">📊</span>
         <h1>Leaderboard</h1>
-        <p>See how you stack up against other prediction masters!</p>
+        <p>Se hvor du står i konkurrencen!</p>
       </div>
 
       <div class="card">
@@ -928,6 +928,17 @@
         </table>
       </div>
     </div>
+    <!-- USER PICKS MODAL -->
+    <div id="userPicksModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9998;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 15px;">
+      <div style="background:var(--gray);border:2px solid var(--yellow);border-radius:12px;max-width:700px;width:100%;padding:25px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h2 id="userPicksTitle" style="color:var(--yellow);">Picks</h2>
+          <button onclick="closeUserPicks()" class="btn btn-secondary" style="padding:6px 14px;">✕</button>
+        </div>
+        <div id="userPicksContent">Loading...</div>
+      </div>
+    </div>
+
   </main>
 
   <footer>
@@ -1357,14 +1368,14 @@ async function loadUserPicks() {
     // ============================================
     // LEADERBOARD
     // ============================================
-    async function loadLeaderboard() {
+  async function loadLeaderboard() {
       const tbody = document.getElementById('leaderboardBody');
       tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;">Loading...</td></tr>';
       
       try {
         const { data: users, error } = await db
           .from('users')
-          .select('username, points, correct_picks')
+          .select('id, username, points, correct_picks')
           .order('points', { ascending: false })
           .order('correct_picks', { ascending: false });
         
@@ -1380,7 +1391,7 @@ async function loadUserPicks() {
           const rankEmoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1);
           
           return `
-            <tr>
+            <tr data-user-id="${user.id}" data-username="${user.username}" style="cursor:pointer;">
               <td class="rank-cell ${rankClass}">${rankEmoji}</td>
               <td><strong>${user.username}</strong></td>
               <td>${user.correct_picks || 0}</td>
@@ -1388,6 +1399,10 @@ async function loadUserPicks() {
             </tr>
           `;
         }).join('');
+
+        tbody.querySelectorAll('tr[data-user-id]').forEach(row => {
+          row.addEventListener('click', () => viewUserPicks(row.dataset.userId, row.dataset.username));
+        });
         
       } catch (error) {
         console.error('Leaderboard error:', error);
@@ -1426,6 +1441,70 @@ async function loadUserPicks() {
       // picks form loads when picks page is opened
     }
 
+// ===== VIEW ANOTHER USER'S LOCKED / MARKED PICKS =====
+    async function viewUserPicks(userId, username) {
+      const modal = document.getElementById('userPicksModal');
+      const content = document.getElementById('userPicksContent');
+      document.getElementById('userPicksTitle').textContent = `${username}'s Picks`;
+      content.innerHTML = 'Loading...';
+      modal.style.display = 'flex';
+
+      try {
+        const { data: questions } = await db.from('questions').select('*');
+        const { data: options } = await db.from('options').select('*');
+        const { data: picks } = await db.from('picks').select('*').eq('user_id', userId);
+
+        const oMap = {}; (options || []).forEach(o => oMap[o.id] = o);
+        const pickMap = {}; (picks || []).forEach(p => pickMap[p.question_id] = p);
+
+        // Only show questions that have been MARKED (correct answer set)
+        const markedQuestions = (questions || []).filter(q =>
+          q.correct_option_id !== null && q.correct_option_id !== undefined && q.correct_option_id !== ''
+        );
+
+        if (markedQuestions.length === 0) {
+          content.innerHTML = '<p style="text-align:center;padding:30px;color:rgba(250,250,250,0.6);">No marked questions to show yet.</p>';
+          return;
+        }
+
+        markedQuestions.sort((a, b) => (a.stage ?? -1) - (b.stage ?? -1));
+
+        content.innerHTML = markedQuestions.map(q => {
+          const pick = pickMap[q.id];
+          const chosen = pick ? oMap[pick.option_id] : null;
+          const chosenText = chosen ? chosen.option_text : '—';
+          const label = q.q_label ? `${q.q_label}: ${q.question_text}` : q.question_text;
+
+          let resultHtml = '';
+          if (pick) {
+            const isCorrect = q.correct_option_id == pick.option_id;
+            const pts = isCorrect ? (chosen ? chosen.points : 0) : 0;
+            resultHtml = isCorrect
+              ? `<span style="color:#2ECC71;font-weight:700;">✅ Correct · +${pts} pts</span>`
+              : `<span style="color:#FF6B6B;font-weight:700;">❌ Wrong · 0 pts</span>`;
+          } else {
+            resultHtml = `<span style="color:rgba(250,250,250,0.5);">No pick</span>`;
+          }
+
+          return `
+            <div class="pick-item" style="flex-direction:column;align-items:flex-start;gap:6px;">
+              <span class="pick-label">${label}</span>
+              <span class="pick-value">${chosenText}</span>
+              ${resultHtml}
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('viewUserPicks error:', err);
+        content.innerHTML = '<p style="color:#FF6B6B;text-align:center;padding:30px;">Failed to load picks.</p>';
+      }
+    }
+
+    function closeUserPicks() {
+      document.getElementById('userPicksModal').style.display = 'none';
+    }
+
+    
     // Start the app
     init();
 
