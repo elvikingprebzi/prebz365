@@ -1486,8 +1486,8 @@ async function loadUserPicks() {
             const isCorrect = q.correct_option_id == pick.option_id;
             const pts = isCorrect ? (chosen ? chosen.points : 0) : 0;
             resultHtml = isCorrect
-              ? `<span style="color:#2ECC71;font-weight:700;">✅ Correct · +${pts} pts</span>`
-              : `<span style="color:#FF6B6B;font-weight:700;">❌ Wrong · 0 pts</span>`;
+              ? `<span style="color:#2ECC71;font-weight:700;">✅ Korrekt · +${pts} pts</span>`
+              : `<span style="color:#FF6B6B;font-weight:700;">❌ Forkert · 0 pts</span>`;
           } else {
             resultHtml = `<span style="color:rgba(250,250,250,0.5);">No pick</span>`;
           }
