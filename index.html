@@ -1377,6 +1377,7 @@ async function loadUserPicks() {
     .from('picks')
     .select('question_id, option_id')
     .eq('user_id', currentUser.id);
+    .order('question_id', { ascending: true });
 
   if (error || !userPicks || userPicks.length === 0) {
     document.getElementById('confirmedPicks').style.display = 'none';
