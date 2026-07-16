@@ -1496,7 +1496,7 @@ async function loadUserPicks() {
         }).join('');
 
         tbody.querySelectorAll('tr[data-user-id]').forEach(row => {
-          row.addEventListener('click', () => Picks(row.dataset.userId, row.dataset.username));
+          row.addEventListener('click', () => viewUserPicks(row.dataset.userId, row.dataset.username));
         });
         
       } catch (error) {
