@@ -1310,9 +1310,8 @@ async function loadPicksForm() {
           ${q.q_label ? `<strong>${q.q_label}:</strong> ` : ''}${q.question_text}
           ${isLocked ? '<span class="locked-badge">🔒 LOCKED</span>' : ''}
         </div>
-        <select id="q_${q.id}" data-qid="${q.id}" ${isLocked ? 'disabled' : ''}
-          <select id="q_${q.id}" data-qid="${q.id}" data-locked="${isLocked}"
-  style="width:100%;padding:12px;font-size:0.95rem;background:var(--black);border:2px solid var(--light-gray);border-radius:6px;color:var(--white);${isLocked ? 'opacity:0.6;cursor:not-allowed;' : ''}">
+        <select id="q_${q.id}" data-qid="${q.id}" data-locked="${isLocked}"
+          style="width:100%;padding:12px;font-size:0.95rem;background:var(--black);border:2px solid var(--light-gray);border-radius:6px;color:var(--white);${isLocked ? 'opacity:0.6;' : ''}">
           <option value="">-- Vælg --</option>
           ${qOptions.map(o => `
             <option value="${o.id}" ${saved && saved.option_id == o.id ? 'selected' : ''}>
@@ -1322,13 +1321,6 @@ async function loadPicksForm() {
         </select>
       </div>
     `;
-        sel.addEventListener('change', () => {
-      if (sel.dataset.locked === 'true') {
-        const saved = savedPick(q.id);
-        sel.value = saved ? saved.option_id : '';
-        showAlert('picksAlert', 'This question is locked and cannot be changed.', 'error');
-      }
-    });
   };
 
   // ---- Split questions: pre-tour (stage null) vs stages ----
@@ -1387,83 +1379,18 @@ async function loadPicksForm() {
   });
 
   container.innerHTML = html || '<p style="text-align:center;padding:40px;color:rgba(250,250,250,0.6);">Ingen spørgsmål tilgængelige endnu.</p>';
-}
 
-
-async function submitPicks() {
-  if (!currentUser) { showPage('login'); return; }
-
-  const selects = document.querySelectorAll('#questionsContainer select[data-qid]');
-  const rows = [];
-  const now = new Date();
-
-  selects.forEach(sel => {
-    if (sel.dataset.locked === 'true') return; // skip locked questions
-    const qid = parseInt(sel.dataset.qid);
-    const oid = sel.value ? parseInt(sel.value) : null;
-    if (oid) {
-      rows.push({
-        user_id: currentUser.id,
-        question_id: qid,
-        option_id: oid,
-        updated_at: now.toISOString()
-      });
-    }
+  // ---- Attach lock-enforcement listeners AFTER DOM is populated ----
+  document.querySelectorAll('#questionsContainer select[data-qid]').forEach(sel => {
+    sel.addEventListener('change', () => {
+      if (sel.dataset.locked === 'true') {
+        const qid = parseInt(sel.dataset.qid);
+        const saved = savedPick(qid);
+        sel.value = saved ? saved.option_id : '';
+        showAlert('picksAlert', 'This question is locked and cannot be changed.', 'error');
+      }
+    });
   });
-
-  if (rows.length === 0) {
-    showAlert('picksAlert', 'Please select at least one answer.', 'error');
-    return;
-  }
-
-  const { error } = await db
-    .from('picks')
-    .upsert(rows, { onConflict: 'user_id,question_id' });
-
-  if (error) {
-    console.error('Save picks error:', error);
-    showAlert('picksAlert', 'Failed to save picks. Please try again.', 'error');
-    return;
-  }
-
-  showAlert('picksAlert', `Successfully saved ${rows.length} pick(s)!`, 'success');
-  loadUserPicks();
-}
-
-async function loadUserPicks() {
-  if (!currentUser) return;
-
-  const { data: userPicks, error } = await db
-    .from('picks')
-    .select('question_id, option_id')
-    .eq('user_id', currentUser.id)
-    .order('question_id', { ascending: true });
-
-  if (error || !userPicks || userPicks.length === 0) {
-    document.getElementById('confirmedPicks').style.display = 'none';
-    return;
-  }
-
-  // Need question + option text for display
-  const { data: questions } = await db.from('questions').select('id, q_label, question_text');
-  const { data: options } = await db.from('options').select('id, option_text');
-
-  const qMap = {}; (questions || []).forEach(q => qMap[q.id] = q);
-  const oMap = {}; (options || []).forEach(o => oMap[o.id] = o.option_text);
-
-  const list = document.getElementById('picksList');
-  list.innerHTML = userPicks.map(p => {
-    const q = qMap[p.question_id];
-    const label = q ? (q.q_label ? `${q.q_label}: ${q.question_text}` : q.question_text) : `Question ${p.question_id}`;
-    return `
-      <div class="pick-item">
-        <span class="pick-label">${label}</span>
-        <span class="pick-value">${oMap[p.option_id] || '—'}</span>
-      </div>
-    `;
-  }).join('');
-
-  document.getElementById('confirmedPicks').style.display = 'block';
 }
 
 
