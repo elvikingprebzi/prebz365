@@ -1496,7 +1496,7 @@ async function loadUserPicks() {
         }).join('');
 
         tbody.querySelectorAll('tr[data-user-id]').forEach(row => {
-          row.addEventListener('click', () => viewUserPicks(row.dataset.userId, row.dataset.username));
+          row.addEventListener('click', () => Picks(row.dataset.userId, row.dataset.username));
         });
         
       } catch (error) {
@@ -1537,7 +1537,7 @@ async function loadUserPicks() {
     }
 
 // ===== VIEW ANOTHER USER'S LOCKED / MARKED PICKS =====
-    async function viewUserPicks(userId, username) {
+        async function viewUserPicks(userId, username) {
       const modal = document.getElementById('userPicksModal');
       const content = document.getElementById('userPicksContent');
       document.getElementById('userPicksTitle').textContent = `${username}'s Picks`;
@@ -1570,15 +1570,18 @@ async function loadUserPicks() {
           const chosenText = chosen ? chosen.option_text : '—';
           const label = q.q_label ? `${q.q_label}: ${q.question_text}` : q.question_text;
 
+          const correctOption = oMap[q.correct_option_id];
+          const correctText = correctOption ? correctOption.option_text : 'Unknown';
+
           let resultHtml = '';
           if (pick) {
             const isCorrect = q.correct_option_id == pick.option_id;
             const pts = isCorrect ? (chosen ? chosen.points : 0) : 0;
             resultHtml = isCorrect
               ? `<span style="color:#2ECC71;font-weight:700;">✅ Korrekt · +${pts} pts</span>`
-              : `<span style="color:#FF6B6B;font-weight:700;">❌ Forkert · 0 pts</span>`;
+              : `<span style="color:#FF6B6B;font-weight:700;">❌ Forkert · 0 pts (${correctText})</span>`;
           } else {
-            resultHtml = `<span style="color:rgba(250,250,250,0.5);">No pick</span>`;
+            resultHtml = `<span style="color:rgba(250,250,250,0.5);">No pick (${correctText})</span>`;
           }
 
           return `
