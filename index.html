@@ -1312,7 +1312,8 @@ async function loadPicksForm() {
           ${isLocked ? '<span class="locked-badge">🔒 LOCKED</span>' : ''}
         </div>
         <select id="q_${q.id}" data-qid="${q.id}" ${isLocked ? 'disabled' : ''}
-          style="width:100%;padding:12px;font-size:0.95rem;background:var(--black);border:2px solid var(--light-gray);border-radius:6px;color:var(--white);${isLocked ? 'opacity:0.6;cursor:not-allowed;' : ''}">
+          <select id="q_${q.id}" data-qid="${q.id}" data-locked="${isLocked}"
+  style="width:100%;padding:12px;font-size:0.95rem;background:var(--black);border:2px solid var(--light-gray);border-radius:6px;color:var(--white);${isLocked ? 'opacity:0.6;cursor:not-allowed;' : ''}">
           <option value="">-- Vælg --</option>
           ${qOptions.map(o => `
             <option value="${o.id}" ${saved && saved.option_id == o.id ? 'selected' : ''}>
@@ -1322,6 +1323,13 @@ async function loadPicksForm() {
         </select>
       </div>
     `;
+        sel.addEventListener('change', () => {
+      if (sel.dataset.locked === 'true') {
+        const saved = savedPick(q.id);
+        sel.value = saved ? saved.option_id : '';
+        showAlert('picksAlert', 'This question is locked and cannot be changed.', 'error');
+      }
+    });
   };
 
   // ---- Split questions: pre-tour (stage null) vs stages ----
@@ -1391,7 +1399,7 @@ async function submitPicks() {
   const now = new Date();
 
   selects.forEach(sel => {
-    if (sel.disabled) return; // skip locked questions
+    if (sel.dataset.locked === 'true') return; // skip locked questions
     const qid = parseInt(sel.dataset.qid);
     const oid = sel.value ? parseInt(sel.value) : null;
     if (oid) {
