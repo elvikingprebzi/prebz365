@@ -1451,7 +1451,58 @@ async function submitPicks() {
     btn.textContent = originalText;
   }
 }
+    // ============================================
+    // Load USER PICKS
+    // ============================================
+    
+async function loadUserPicks() {
+  if (!currentUser) return;
 
+  const picksListEl = document.getElementById('picksList');
+  const confirmedBox = document.getElementById('confirmedPicks');
+
+  try {
+    const { data: picks } = await db
+      .from('picks')
+      .select('*')
+      .eq('user_id', currentUser.id);
+
+    if (!picks || picks.length === 0) {
+      confirmedBox.style.display = 'none';
+      return;
+    }
+
+    const { data: questions } = await db.from('questions').select('*');
+    const { data: options } = await db.from('options').select('*');
+
+    const qMap = {}; (questions || []).forEach(q => qMap[q.id] = q);
+    const oMap = {}; (options || []).forEach(o => oMap[o.id] = o);
+
+    const sortedPicks = [...picks].sort((a, b) => {
+      const qa = qMap[a.question_id], qb = qMap[b.question_id];
+      const sa = qa?.stage ?? -1, sb = qb?.stage ?? -1;
+      return sa - sb;
+    });
+
+    picksListEl.innerHTML = sortedPicks.map(p => {
+      const q = qMap[p.question_id];
+      const o = oMap[p.option_id];
+      if (!q || !o) return '';
+      const label = q.q_label ? `${q.q_label}: ${q.question_text}` : q.question_text;
+      return `
+        <div class="pick-item">
+          <span class="pick-label">${label}</span>
+          <span class="pick-value">${o.option_text}</span>
+        </div>
+      `;
+    }).join('');
+
+    confirmedBox.style.display = 'block';
+
+  } catch (err) {
+    console.error('loadUserPicks error:', err);
+  }
+}
     // ============================================
     // LEADERBOARD
     // ============================================
