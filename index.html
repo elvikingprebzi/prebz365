@@ -1392,7 +1392,65 @@ async function loadPicksForm() {
     });
   });
 }
+    // ============================================
+    // SUBMIT PICKS
+    // ============================================
+    
+async function submitPicks() {
+  if (!currentUser) {
+    showAlert('picksAlert', 'You must be logged in to save picks.', 'error');
+    return;
+  }
 
+  const selects = document.querySelectorAll('#questionsContainer select[data-qid]');
+  const picksToSave = [];
+
+  selects.forEach(sel => {
+    // Skip locked questions entirely — don't overwrite existing picks
+    if (sel.dataset.locked === 'true') return;
+
+    const qid = parseInt(sel.dataset.qid);
+    const optionId = sel.value;
+
+    if (optionId) {
+      picksToSave.push({
+        user_id: currentUser.id,
+        question_id: qid,
+        option_id: parseInt(optionId)
+      });
+    }
+  });
+
+  if (picksToSave.length === 0) {
+    showAlert('picksAlert', 'No picks selected to save.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('savePicksBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    const { error } = await db
+      .from('picks')
+      .upsert(picksToSave, { onConflict: 'user_id,question_id' });
+
+    if (error) throw error;
+
+    showAlert('picksAlert', '✅ Your picks have been saved!', 'success');
+
+    // Refresh saved picks so selections/locks reflect latest state
+    await loadUserPicks();
+
+  } catch (err) {
+    console.error('submitPicks error:', err);
+    showAlert('picksAlert', `Failed to save picks: ${err.message || 'Unknown error'}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
 
     // ============================================
     // LEADERBOARD
